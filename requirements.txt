@@ -1,5 +1,5 @@
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch~=2.2.1+cpu
+--find-links https://download.pytorch.org/whl/cpu
+torch
 flask~=3.0.2
 fairseq~=0.12.2
 sentencepiece~=0.2.0
