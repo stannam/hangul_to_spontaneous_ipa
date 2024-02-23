@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangul to spontaneous IPA</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #chatContainer {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            margin-top: 50px;
+        }
+
+        #title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #chatPanel {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 5px;
+            overflow-y: auto;
+            text-align: left; /* Align text to the left */
+            max-height: 70vh; /* Adjust the maximum height as needed */
+
+        }
+
+        #inputForm {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        #refreshButton {
+            cursor: pointer;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #disclaimer {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            text-align: left;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="chatContainer">
+        <div id="title">Hangul to spontaneous IPA</div>
+        <form id="inputForm">
+            <input type="text" name="user_input" id="userInput" placeholder="Type a sentence in Hangul (한글)...">
+            <input type="button" value="Convert" onclick="processInput()">
+            <button type="button" id="refreshButton" onclick="refreshChat()">Refresh</button>
+        </form>
+        <div id="chatPanel">
+            <!-- Chat messages will be displayed here -->
+        </div>
+    </div>
+
+    <div id="disclaimer">
+        <p><strong>Disclaimer:</strong> This is only for a proof of concept. There is no guarantee of accuracy, and the system may make mistakes. Use the information at your own discretion.</p>
+    </div>
+
+    <script>
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            processInput();
+        }
+
+        document.getElementById('inputForm').addEventListener('submit', handleFormSubmit);
+
+        function processInput() {
+            var userInput = document.getElementById('userInput').value;
+            var chatPanel = document.getElementById('chatPanel');
+
+            // Display user input in the chat panel
+            chatPanel.innerHTML += `<p><strong>Orthography:</strong> ${userInput}</p>`;
+
+            // Send user input to the server for processing
+            fetch('/process_input', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'user_input=' + userInput,
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Check if processed result is "N/A" and display appropriate message
+                var processedResult = (data.processed_result === 'N/A') ?
+                    'Not Available. Please remove any symbols and numbers.' :
+                    data.processed_result;
+
+                // Display processed result in the chat panel with an empty line below
+                chatPanel.innerHTML += `<p><strong>IPA:</strong> ${processedResult}</p><br>`;
+            });
+
+            // Clear the input field
+            document.getElementById('userInput').value = '';
+
+            // Scroll to the bottom of the chat panel
+            chatPanel.scrollTop = chatPanel.scrollHeight;
+        }
+
+        function refreshChat() {
+            document.getElementById('chatPanel').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
